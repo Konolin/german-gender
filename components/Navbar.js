@@ -17,7 +17,7 @@ const Navbar = ({setComponent, selectedComponent, setComponentAfterStats}) => {
 
     const navItems = [
         {label: 'Home', component: 'Home'},
-        {label: 'Learn', component: 'Learn'},
+        {label: 'Word List', component: 'WordList'},
         {label: 'Sentence Builder', component: 'SentenceBuilder'},
     ];
 
@@ -39,9 +39,9 @@ const Navbar = ({setComponent, selectedComponent, setComponentAfterStats}) => {
         setCurrentUserId(null);
     }
 
-    const isLogoutVisible = !currentUserId &&
+    const isLogoutVisible = !!currentUserId &&
         selectedComponent !== 'Practice' &&
-        selectedComponent === 'Revision' &&
+        selectedComponent !== 'Revision' &&
         selectedComponent !== 'StatsScreen';
 
 

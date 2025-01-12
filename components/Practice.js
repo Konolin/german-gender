@@ -15,6 +15,9 @@ import {updateWordScoreForUser} from "../firebase/updateWordScore";
 import {getUnlockedWordsForUser} from "../firebase/getUnlockedWords";
 import {unlockNextWordForUser} from "../firebase/unlockNextWord";
 import {UserContext} from "../context/UserContext";
+import updateWordScoreForGuest from "../sqlite/updateWordScoreForGuest";
+import unlockNextWordForGuest from "../sqlite/unlockNextWordForGuest";
+import {getUnlockedWordsForGuest} from "../sqlite/getUnlockedWordsForGuest";
 
 const Practice = ({numWordsToPractice, wordType, setSelectedComponent, setStats}) => {
     const [words, setWords] = useState([]);
@@ -43,8 +46,10 @@ const Practice = ({numWordsToPractice, wordType, setSelectedComponent, setStats}
     const [alertOptions, setAlertOptions] = useState({
         title: '',
         message: '',
-        onCancel: () => {},
-        onContinue: () => {},
+        onCancel: () => {
+        },
+        onContinue: () => {
+        },
     });
 
     // Calculate pill size based on screen width and number of words
@@ -64,7 +69,9 @@ const Practice = ({numWordsToPractice, wordType, setSelectedComponent, setStats}
         const initializeWords = async () => {
             try {
                 // Retrieve only unlocked words grouped by type from Firestore
-                const allWords = await getUnlockedWordsForUser(currentUserId);
+                const allWords = currentUserId
+                    ? await getUnlockedWordsForUser(currentUserId)
+                    : await getUnlockedWordsForGuest();
 
                 // Extract the word list for the selected type
                 const wordList = allWords[wordType] || [];
@@ -197,9 +204,16 @@ const Practice = ({numWordsToPractice, wordType, setSelectedComponent, setStats}
         // Update the score in Firestore using the custom ID only in the first round
         if (practiceRound === 1) {
             try {
-                await updateWordScoreForUser(currentUserId, currentWord.id, newScore); // Use the custom ID
+                if (currentUserId) {
+                    await updateWordScoreForUser(currentUserId, currentWord.id, newScore); // Use the custom ID
+                } else {
+                    await updateWordScoreForGuest(currentWord.id, newScore);
+                }
+
                 if (newScore === 4) {
-                    const unlockedWord = await unlockNextWordForUser(currentWord.id, currentWord.type, currentUserId);
+                    const unlockedWord = currentUserId
+                        ? await unlockNextWordForUser(currentWord.id, currentWord.type, currentUserId)
+                        : await unlockNextWordForGuest(currentWord.id);
                     if (practiceRound === 1 && unlockedWord) {
                         setStats((prevStats) => ({
                             ...prevStats,
@@ -559,10 +573,13 @@ const Practice = ({numWordsToPractice, wordType, setSelectedComponent, setStats}
                                             ) : (
                                                 <Text style={styles.instructionText}>
                                                     {currentWord.type === 'noun' && !selectedGender
-                                                        ? <>Choose an <Text style={styles.highlightText}>article</Text> first</>
+                                                        ? <>Choose an <Text
+                                                            style={styles.highlightText}>article</Text> first</>
                                                         : currentWord.type === 'preposition' && !selectedPrepositionCase
-                                                            ? <>Choose a <Text style={styles.highlightText}>case</Text> first</>
-                                                            : <>What is German for <Text style={styles.highlightText}>{currentWord.english}</Text>?</>
+                                                            ? <>Choose a <Text
+                                                                style={styles.highlightText}>case</Text> first</>
+                                                            : <>What is German for <Text
+                                                                style={styles.highlightText}>{currentWord.english}</Text>?</>
                                                     }
                                                 </Text>
                                             )

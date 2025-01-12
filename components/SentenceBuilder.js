@@ -12,6 +12,7 @@ import highlightSentence from "../utils/highlightSentence";
 import * as Speech from 'expo-speech';
 import {getUnlockedWordsForUser} from "../firebase/getUnlockedWords";
 import {UserContext} from "../context/UserContext";
+import {getUnlockedWordsForGuest} from "../sqlite/getUnlockedWordsForGuest";
 
 // Helper function to determine label color by article/type
 const getLabelColor = (article, type) => {
@@ -51,7 +52,7 @@ const SentenceBuilder = () => {
         pronoun: [],
         preposition: [],
     });
-    const { currentUserId } = useContext(UserContext);
+    const {currentUserId} = useContext(UserContext);
 
     // Controls if the full-screen result is shown
     const [showResults, setShowResults] = useState(false);
@@ -60,7 +61,9 @@ const SentenceBuilder = () => {
 
     useEffect(() => {
         const fetchWords = async () => {
-            setWordsData(await getUnlockedWordsForUser(currentUserId));
+            setWordsData(currentUserId
+                ? await getUnlockedWordsForUser(currentUserId)
+                : await getUnlockedWordsForGuest());
         };
         fetchWords();
     }, []);
@@ -82,7 +85,7 @@ const SentenceBuilder = () => {
     const handleWordTypeToggle = (type) => {
         setSelectedWords((prev) => {
             // If we are removing the type, remove the word
-            const newSelectedWords = { ...prev };
+            const newSelectedWords = {...prev};
             delete newSelectedWords[type];
             return newSelectedWords;
         });
@@ -160,7 +163,7 @@ const SentenceBuilder = () => {
                 },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
-                    messages: [{ role: 'user', content: prompt }],
+                    messages: [{role: 'user', content: prompt}],
                 }),
             });
 
@@ -227,7 +230,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
                 },
                 body: JSON.stringify({
                     model: 'gpt-4o-mini',
-                    messages: [{ role: 'user', content: explanationPrompt }],
+                    messages: [{role: 'user', content: explanationPrompt}],
                     temperature: 0.5,
                 }),
             });
@@ -256,7 +259,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
         if (sentence && showResults && !isLoading) {
             // Speak the German sentence
             Speech.stop();
-            Speech.speak(sentence, { language: 'de-DE', pitch: 1.0, rate: 1.0 });
+            Speech.speak(sentence, {language: 'de-DE', pitch: 1.0, rate: 1.0});
         }
         return () => Speech.stop();
     }, [sentence, showResults, isLoading]);
@@ -333,7 +336,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
                                     <Text style={styles.subtitle}>
                                         {type.charAt(0).toUpperCase() + type.slice(1)} selected:
                                     </Text>
-                                    <Text style={[styles.coloredWordText, { color: labelColor }]}>
+                                    <Text style={[styles.coloredWordText, {color: labelColor}]}>
                                         {selectedWord.german}
                                     </Text>
                                 </View>
@@ -388,7 +391,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
                                 return (
                                     <Text
                                         key={w.german}
-                                        style={[styles.selectedWordItem, { color }]}
+                                        style={[styles.selectedWordItem, {color}]}
                                     >
                                         {w.german}{'  '}
                                     </Text>
@@ -399,7 +402,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
                         {/* Loading Indicator */}
                         {isLoading && (
                             <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color={colors.highlightColor} />
+                                <ActivityIndicator size="large" color={colors.highlightColor}/>
                                 <Text style={styles.generatingText}>
                                     Currently generating your sentence...
                                 </Text>
@@ -442,7 +445,7 @@ Now, analyze the following sentence and provide the rule(s) that apply:
 
                                             return (
                                                 <Text key={idx} style={styles.explanationText}>
-                                                    <Text style={{ fontWeight: 'bold', color: colors.highlightColor }}>
+                                                    <Text style={{fontWeight: 'bold', color: colors.highlightColor}}>
                                                         Rule:
                                                     </Text>
                                                     {restOfLine}
@@ -512,7 +515,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         margin: 5,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 3,
@@ -563,7 +566,7 @@ const styles = StyleSheet.create({
         borderRadius: 6,
         margin: 5,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 2,
@@ -582,7 +585,7 @@ const styles = StyleSheet.create({
         marginVertical: 15,
         alignSelf: 'center',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.15,
         shadowRadius: 5,
         elevation: 4,
@@ -617,7 +620,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 3,
@@ -670,7 +673,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginBottom: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.15,
         shadowRadius: 4,
         elevation: 3,
@@ -694,7 +697,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         marginTop: 10,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 2,

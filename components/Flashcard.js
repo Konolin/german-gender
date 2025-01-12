@@ -8,7 +8,7 @@ const Flashcard = ({item, firstLocked}) => {
 
     const MAX_SCORE = 4;
     const MIN_SCORE = -4;
-    const isScoreNull = score === null;
+    const isScoreNull = score === null || item.unlocked === 0;
 
     // Returns color based on article or type
     const getLabelColor = (article, type) => {

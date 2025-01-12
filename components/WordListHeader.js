@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import colors from '../styles/colors';
 
-const LearnHeader = ({
+const WordListHeader = ({
                          searchQuery,
                          setSearchQuery,
                          selectedType,
@@ -103,4 +103,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default LearnHeader;
+export default WordListHeader;
